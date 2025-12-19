@@ -1,25 +1,25 @@
-FROM node:20-alpine AS builder
+FROM node:25-alpine AS builder
 
 WORKDIR /app
 
-# Копирование package.json и установка всех зависимостей
+# Copying package.json and installing all dependencies
 COPY package*.json ./
 RUN npm ci
 
-# Копирование исходного кода и сборка
+# Copying the source code and building
 COPY . .
 RUN npm run build
 
-# Production стадия с nginx
+# Production stage with nginx
 FROM nginx:alpine
 
-# Удаление дефолтной конфигурации nginx
+# Removing the default nginx configuration
 RUN rm /etc/nginx/conf.d/default.conf
 
-# Копирование собранного приложения
+# Copying the assembled application
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Копирование кастомной конфигурации nginx для SPA
+# Copying a custom nginx configuration for SPA
 COPY nginx-spa.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80

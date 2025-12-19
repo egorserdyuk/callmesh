@@ -80,3 +80,5 @@ coverage
 .vscode
 celerybeat-schedule
 celerybeat-schedule-wal
+
+AGENTS.md

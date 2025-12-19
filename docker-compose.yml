@@ -3,7 +3,7 @@ version: "3.8"
 services:
   # PostgreSQL Database
   db:
-    image: postgres:15-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-videocall_db}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -25,7 +25,7 @@ services:
 
   # Redis for Sessions and Caching
   redis:
-    image: redis:7-alpine
+    image: redis:8.4.0-alpine
     volumes:
       - redis_data:/data
     networks:
@@ -38,7 +38,7 @@ services:
       retries: 3
     command: redis-server --appendonly yes
 
-  # Инициализация статических файлов и миграций
+  # Initialization of static files and migrations
   static-init:
     build:
       context: ./backend
@@ -64,7 +64,7 @@ services:
         condition: service_healthy
     networks:
       - app-network
-    user: "0:0" # Запускаем как root для создания директорий
+    user: "0:0" # Run as root to create directories
     command: >
       sh -c "
         echo '🚀 Starting video call app initialization...' &&
