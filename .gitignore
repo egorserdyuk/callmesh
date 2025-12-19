@@ -83,3 +83,4 @@ celerybeat-schedule-wal
 
 AGENTS.md
 secret_generator.py
+pgpass_generator.py
