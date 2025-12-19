@@ -1,1 +1,4 @@
 .venv/
+requirements_dev.txt
+__pycache__/
+.pre-commit-config.yaml
