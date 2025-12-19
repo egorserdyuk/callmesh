@@ -113,15 +113,22 @@ CHANNEL_LAYERS = {
 }
 
 # Cache configuration
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": REDIS_URL,
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
+if not DEBUG:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            },
+        }
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+        }
+    }
 
 # Session configuration
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
@@ -283,7 +290,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 # Application-specific settings
 ROOM_EXPIRY_HOURS = 24
-MAX_PARTICIPANTS_PER_ROOM = 2
+MAX_PARTICIPANTS_PER_ROOM = 10
 SHORT_CODE_LENGTH = 6
 
 # Default primary key field type
