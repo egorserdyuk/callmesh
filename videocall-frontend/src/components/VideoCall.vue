@@ -357,6 +357,28 @@
             ></path>
           </svg>
         </button>
+
+        <!-- Settings -->
+        <button
+          @click="showSettings = !showSettings"
+          class="control-button control-button-inactive"
+          title="Video settings"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+            ></path>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+            ></path>
+          </svg>
+        </button>
       </div>
 
       <!-- Connection status message -->
@@ -516,6 +538,79 @@
       </div>
     </Teleport>
 
+    <!-- Settings Modal -->
+    <Teleport to="body">
+      <div
+        v-if="showSettings"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        @click="showSettings = false"
+      >
+        <div class="card w-full max-w-md p-6 animate-slide-up" @click.stop>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Video Settings</h3>
+
+          <!-- Video Devices -->
+          <div v-if="videoDevices.length > 0" class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >Camera</label
+            >
+            <select v-model="selectedVideoDevice" @change="switchVideoDevice" class="input-field">
+              <option v-for="device in videoDevices" :key="device.deviceId" :value="device.deviceId">
+                {{ device.label || `Camera ${videoDevices.indexOf(device) + 1}` }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Audio Devices -->
+          <div v-if="audioDevices.length > 0" class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >Microphone</label
+            >
+            <select v-model="selectedAudioDevice" @change="switchAudioDevice" class="input-field">
+              <option v-for="device in audioDevices" :key="device.deviceId" :value="device.deviceId">
+                {{ device.label || `Microphone ${audioDevices.indexOf(device) + 1}` }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Video Quality Settings -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >Video Quality</label
+            >
+            <select v-model="selectedQuality" @change="changeVideoQuality" class="input-field">
+              <option value="720p">HD (720p)</option>
+              <option value="480p">SD (480p)</option>
+              <option value="360p">Low (360p)</option>
+            </select>
+          </div>
+
+          <!-- Mirror Video -->
+          <div class="flex items-center justify-between">
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Mirror video</label>
+            <button
+              @click="toggleMirror"
+              :class="[
+                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2',
+                webrtcStore.shouldMirror ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-600',
+              ]"
+            >
+              <span
+                :class="[
+                  'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                  webrtcStore.shouldMirror ? 'translate-x-6' : 'translate-x-1',
+                ]"
+              ></span>
+            </button>
+          </div>
+
+          <!-- Close Settings -->
+          <div class="mt-4 flex justify-end">
+            <button @click="showSettings = false" class="btn-secondary px-4 py-2">Done</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
     <!-- Full screen loading overlay -->
     <div
       v-if="isConnecting"
@@ -540,6 +635,7 @@ import { useRoomsStore } from '../stores/rooms'
 import { useGlobalStore } from '../stores/global'
 import { utils } from '../services/utils'
 import { webrtcService } from '../services/webrtc'
+import { useMediaDevices } from '../composables/useMediaDevices'
 
 const route = useRoute()
 const router = useRouter()
@@ -566,6 +662,17 @@ const showConnectionQuality = ref(true)
 const isConnecting = ref(false)
 const connectingMessage = ref('Connecting...')
 const connectingSubMessage = ref('Setting up your video call')
+
+const { videoDevices, audioDevices, selectedVideoDevice, selectedAudioDevice, switchVideoDevice: switchVideo, switchAudioDevice: switchAudio } = useMediaDevices()
+const showSettings = ref(false)
+const selectedQuality = ref('720p')
+
+// Quality presets
+const qualityPresets = {
+  '720p': { width: 1280, height: 720 },
+  '480p': { width: 640, height: 480 },
+  '360p': { width: 480, height: 360 },
+}
 
 // Connection monitoring
 const connectionStats = ref(null)
@@ -876,6 +983,84 @@ const startStatsMonitoring = () => {
       2000, // Update every 2 seconds
     )
   }
+}
+
+const switchVideoDevice = async () => {
+  try {
+    if (selectedVideoDevice.value) {
+      // Stop current stream
+      if (webrtcStore.localStream) {
+        webrtcStore.localStream.getVideoTracks().forEach((track) => track.stop())
+      }
+
+      // Create new stream with selected device
+      const constraints = {
+        video: {
+          deviceId: selectedVideoDevice.value,
+          ...qualityPresets[selectedQuality.value],
+        },
+        audio: selectedAudioDevice.value
+          ? {
+              deviceId: selectedAudioDevice.value,
+            }
+          : true,
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints)
+      webrtcStore.localStream = stream
+    }
+  } catch (error) {
+    console.error('Failed to switch video device:', error)
+  }
+}
+
+const switchAudioDevice = async () => {
+  try {
+    if (selectedAudioDevice.value) {
+      // Similar logic for audio device switching
+      if (webrtcStore.localStream) {
+        webrtcStore.localStream.getAudioTracks().forEach((track) => track.stop())
+      }
+
+      const constraints = {
+        video: selectedVideoDevice.value
+          ? {
+              deviceId: selectedVideoDevice.value,
+              ...qualityPresets[selectedQuality.value],
+            }
+          : true,
+        audio: {
+          deviceId: selectedAudioDevice.value,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints)
+      webrtcStore.localStream = stream
+    }
+  } catch (error) {
+    console.error('Failed to switch audio device:', error)
+  }
+}
+
+const changeVideoQuality = async () => {
+  try {
+    if (webrtcStore.localStream && selectedQuality.value) {
+      const videoTrack = webrtcStore.localStream.getVideoTracks()[0]
+      if (videoTrack) {
+        const constraints = qualityPresets[selectedQuality.value]
+        await videoTrack.applyConstraints(constraints)
+      }
+    }
+  } catch (error) {
+    console.error('Failed to change video quality:', error)
+  }
+}
+
+const toggleMirror = () => {
+  webrtcStore.toggleMirror()
 }
 
 // Watch for stream changes
