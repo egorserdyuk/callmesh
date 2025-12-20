@@ -27,9 +27,9 @@ export default defineConfig({
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Video Call App',
-        short_name: 'VideoCall',
-        description: 'Secure video calling without registration',
+        name: 'CallMesh - Secure Calling',
+        short_name: 'CallMesh',
+        description: 'Secure calling without registration',
         theme_color: '#00C853',
         background_color: '#ffffff',
         display: 'standalone',

@@ -1,9 +1,9 @@
 
 // public/site.webmanifest - PWA manifest
 {
-  "name": "Video Call App",
-  "short_name": "VideoCall",
-  "description": "Secure video calling without registration",
+  "name": "CallMesh - Secure Calling",
+  "short_name": "CallMesh",
+  "description": "Secure calling without registration",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
