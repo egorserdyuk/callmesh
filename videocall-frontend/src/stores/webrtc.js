@@ -17,7 +17,6 @@ export const useWebRTCStore = defineStore('webrtc', () => {
   const connectionState = ref('new') // new, connecting, connected, disconnected, failed
   const remoteParticipants = ref([])
   const localParticipantId = ref(null)
-  const shouldMirror = ref(true)
 
   // Media constraints
   const mediaConstraints = ref({
@@ -390,10 +389,6 @@ export const useWebRTCStore = defineStore('webrtc', () => {
     }
   }
 
-  const toggleMirror = () => {
-    shouldMirror.value = !shouldMirror.value
-  }
-
   const endCall = async () => {
     try {
       // Close peer connection
@@ -441,7 +436,6 @@ export const useWebRTCStore = defineStore('webrtc', () => {
     remoteParticipants,
     localParticipantId,
     mediaConstraints,
-    shouldMirror,
 
     // Computed
     hasLocalVideo,
@@ -456,7 +450,6 @@ export const useWebRTCStore = defineStore('webrtc', () => {
     sendWebSocketMessage,
     toggleVideo,
     toggleAudio,
-    toggleMirror,
     endCall,
   }
 })
