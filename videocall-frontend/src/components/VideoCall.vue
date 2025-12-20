@@ -990,6 +990,18 @@ const switchVideoDevice = async () => {
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints)
       webrtcStore.localStream = stream
+
+      // Replace video track in peer connection if it exists
+      if (webrtcStore.peerConnection) {
+        const newVideoTrack = stream.getVideoTracks()[0]
+        if (newVideoTrack) {
+          const senders = webrtcStore.peerConnection.getSenders()
+          const videoSender = senders.find(sender => sender.track && sender.track.kind === 'video')
+          if (videoSender) {
+            await videoSender.replaceTrack(newVideoTrack)
+          }
+        }
+      }
     }
   } catch (error) {
     console.error('Failed to switch video device:', error)
@@ -1021,6 +1033,18 @@ const switchAudioDevice = async () => {
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints)
       webrtcStore.localStream = stream
+
+      // Replace audio track in peer connection if it exists
+      if (webrtcStore.peerConnection) {
+        const newAudioTrack = stream.getAudioTracks()[0]
+        if (newAudioTrack) {
+          const senders = webrtcStore.peerConnection.getSenders()
+          const audioSender = senders.find(sender => sender.track && sender.track.kind === 'audio')
+          if (audioSender) {
+            await audioSender.replaceTrack(newAudioTrack)
+          }
+        }
+      }
     }
   } catch (error) {
     console.error('Failed to switch audio device:', error)
