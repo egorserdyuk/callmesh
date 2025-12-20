@@ -300,10 +300,11 @@ export const useRoomsStore = defineStore('rooms', () => {
         const joinData = joinResponse.data
 
         if (joinData.success) {
-          // Mark user as authenticated for passwordless entry
+          // Mark user as authenticated and passwordless for passwordless entry
           // This allows them to access the VideoCall route which requires authentication
           if (!globalStore.isAuthenticated) {
             globalStore.setAuthenticated(true)
+            globalStore.setPasswordlessUser(true)
           }
 
           // Update current room state
