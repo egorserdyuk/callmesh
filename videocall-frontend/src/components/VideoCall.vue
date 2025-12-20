@@ -188,7 +188,7 @@
           muted
           playsinline
           class="w-full h-full object-cover"
-          :class="{ mirror: shouldMirrorLocal }"
+          :class="{ mirror: webrtcStore.shouldMirror }"
         ></video>
 
         <!-- Local video controls overlay -->
@@ -561,7 +561,6 @@ const showStats = ref(false)
 const showMenu = ref(false)
 const roomCodeCopied = ref(false)
 const roomLinkCopied = ref(false)
-const shouldMirrorLocal = ref(true)
 const showVideoInfo = ref(false)
 const showConnectionQuality = ref(true)
 const isConnecting = ref(false)

@@ -43,6 +43,11 @@
         <VideoPreview />
       </div>
 
+      <!-- Media Controls -->
+      <div class="mb-6">
+        <MediaControls />
+      </div>
+
       <!-- Action Buttons -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <ActionCard
@@ -151,6 +156,7 @@ import { useGlobalStore } from '../stores/global'
 import { useRoomsStore } from '../stores/rooms'
 import { utils } from '../services/utils'
 import VideoPreview from './VideoPreview.vue'
+import MediaControls from './MediaControls.vue'
 import ActionCard from './ActionCard.vue'
 import RoomCreatedModal from './RoomCreatedModal.vue'
 
