@@ -140,9 +140,11 @@ export const apiService = {
   },
 
   // Room management endpoints
-  async createRoom() {
+  async createRoom(allowPasswordlessEntry = false) {
     await initializeCSRF()
-    return apiClient.post('/rooms/create/')
+    return apiClient.post('/rooms/create/', {
+      allow_passwordless_entry: allowPasswordlessEntry
+    })
   },
 
   async getRoomInfo(roomId) {
@@ -153,6 +155,19 @@ export const apiService = {
     await initializeCSRF()
     return apiClient.post('/rooms/join/', {
       room_identifier: roomIdentifier,
+    })
+  },
+
+  async handlePasswordlessInvite(token) {
+    await initializeCSRF()
+    return apiClient.get(`/rooms/invite/${token}/`)
+  },
+
+  async joinRoomPasswordless(roomId, token) {
+    await initializeCSRF()
+    return apiClient.post('/rooms/join-passwordless/', {
+      room_id: roomId,
+      token: token
     })
   },
 
