@@ -116,7 +116,24 @@ def handle_passwordless_invite(request, token):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        logger.info(f"Passwordless invite successful for room: {room_data['room_id']}")
+        # Get client IP
+        client_ip = get_client_ip(request)
+
+        # Check if this IP has already used the token
+        ip_used, ip_message = RoomManager.check_passwordless_token_ip(token, client_ip)
+
+        if ip_used:
+            logger.warning(f"IP {client_ip} already used token {token}: {ip_message}")
+            # Invalidate token if same IP tries to reuse
+            RoomManager.invalidate_passwordless_token(token)
+            return Response(
+                {"error": "This invite link has already been used from your location"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        logger.info(
+            f"Passwordless invite validated for room: {room_data['room_id']}, IP: {client_ip}"
+        )
         return Response(
             {
                 "success": True,
@@ -193,8 +210,8 @@ def join_room_passwordless(request):
             )
             return Response({"error": message}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Invalidate token after successful use
-        RoomManager.invalidate_passwordless_token(token)
+        # Add IP to used IPs list (allows multiple IPs but prevents same IP reuse)
+        RoomManager.add_passwordless_token_ip(token, client_ip)
 
         response_data = {
             "success": True,

@@ -69,6 +69,13 @@ class RoomManager:
                 timeout=getattr(settings, "ROOM_EXPIRY_HOURS", 24) * 3600,
             )
 
+            # Initialize used IPs set for this token
+            cache.set(
+                f"passwordless_token_ips_{room_data['passwordless_token']}",
+                [],
+                timeout=getattr(settings, "ROOM_EXPIRY_HOURS", 24) * 3600,
+            )
+
         # Store room data with expiration
         cache.set(
             f"room_{room_data['room_id']}",
@@ -112,6 +119,41 @@ class RoomManager:
         """Invalidate a passwordless token after use"""
         cache = cls._get_redis_client()
         cache.delete(f"passwordless_token_{token}")
+        cache.delete(f"passwordless_token_ips_{token}")
+
+    @classmethod
+    def check_passwordless_token_ip(cls, token, ip_address):
+        """Check if IP has already used this token"""
+        cache = cls._get_redis_client()
+        used_ips = cache.get(f"passwordless_token_ips_{token}")
+
+        if used_ips is None:
+            return False, "Token not found"
+
+        if ip_address in used_ips:
+            return True, "IP already used this token"
+
+        return False, "IP not used"
+
+    @classmethod
+    def add_passwordless_token_ip(cls, token, ip_address):
+        """Add IP to the list of IPs that have used this token"""
+        cache = cls._get_redis_client()
+        used_ips = cache.get(f"passwordless_token_ips_{token}")
+
+        if used_ips is None:
+            used_ips = []
+
+        if ip_address not in used_ips:
+            used_ips.append(ip_address)
+            cache.set(
+                f"passwordless_token_ips_{token}",
+                used_ips,
+                timeout=getattr(settings, "ROOM_EXPIRY_HOURS", 24) * 3600,
+            )
+            return True
+
+        return False
 
     @classmethod
     def get_room_by_id(cls, room_id):
