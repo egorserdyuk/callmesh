@@ -17,6 +17,7 @@ export const useWebRTCStore = defineStore('webrtc', () => {
   const connectionState = ref('new') // new, connecting, connected, disconnected, failed
   const remoteParticipants = ref([])
   const localParticipantId = ref(null)
+  const shouldMirror = ref(true)
 
   // Media constraints
   const mediaConstraints = ref({
@@ -140,10 +141,20 @@ export const useWebRTCStore = defineStore('webrtc', () => {
   const connectWebSocket = (roomId) => {
     return new Promise((resolve, reject) => {
       try {
-        // WebSocket должен подключаться к бэкенду (порт 8000), а не к фронтенду
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-        const wsHost = import.meta.env.VITE_WS_HOST || window.location.host
-        const wsUrl = `${protocol}//${wsHost}/ws/room/${roomId}/`
+        // Use VITE_WS_BASE_URL or construct from API base URL
+        const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL
+        let wsUrl
+        
+        if (wsBaseUrl) {
+          // Remove trailing slash if present
+          const baseUrl = wsBaseUrl.replace(/\/$/, '')
+          wsUrl = `${baseUrl}/ws/room/${roomId}/`
+        } else {
+          // Fallback: construct from window location
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+          const host = 'localhost:8000' // Hardcode for development
+          wsUrl = `${protocol}//${host}/ws/room/${roomId}/`
+        }
 
         console.log('Connecting to WebSocket:', wsUrl)
         websocket.value = new WebSocket(wsUrl)
@@ -379,6 +390,10 @@ export const useWebRTCStore = defineStore('webrtc', () => {
     }
   }
 
+  const toggleMirror = () => {
+    shouldMirror.value = !shouldMirror.value
+  }
+
   const endCall = async () => {
     try {
       // Close peer connection
@@ -426,6 +441,7 @@ export const useWebRTCStore = defineStore('webrtc', () => {
     remoteParticipants,
     localParticipantId,
     mediaConstraints,
+    shouldMirror,
 
     // Computed
     hasLocalVideo,
@@ -440,6 +456,7 @@ export const useWebRTCStore = defineStore('webrtc', () => {
     sendWebSocketMessage,
     toggleVideo,
     toggleAudio,
+    toggleMirror,
     endCall,
   }
 })

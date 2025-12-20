@@ -24,12 +24,12 @@ export const useRoomsStore = defineStore('rooms', () => {
   const canJoinRoom = computed(() => !isJoiningRoom.value && !hasActiveRoom.value)
 
   // Actions
-  const createRoom = async () => {
+  const createRoom = async (allowPasswordlessEntry = false) => {
     try {
       isCreatingRoom.value = true
       globalStore.setLoading(true, 'Creating room...')
 
-      const response = await apiService.createRoom()
+      const response = await apiService.createRoom(allowPasswordlessEntry)
       const roomData = response.data
 
       currentRoom.value = {
@@ -39,6 +39,8 @@ export const useRoomsStore = defineStore('rooms', () => {
         qr_code: roomData.qr_code,
         expires_at: roomData.expires_at,
         max_participants: roomData.max_participants,
+        allow_passwordless_entry: roomData.allow_passwordless_entry || false,
+        passwordless_invite_url: roomData.passwordless_invite_url || null,
         created_at: new Date().toISOString(),
       }
 
@@ -286,6 +288,49 @@ export const useRoomsStore = defineStore('rooms', () => {
     }
   }
 
+  const handlePasswordlessInvite = async (token) => {
+    try {
+      const response = await apiService.handlePasswordlessInvite(token)
+      const inviteData = response.data
+
+      if (inviteData.success) {
+        // Use the passwordless join endpoint instead of regular join
+        // This bypasses authentication requirements for passwordless invites
+        const joinResponse = await apiService.joinRoomPasswordless(inviteData.room_id, token)
+        const joinData = joinResponse.data
+
+        if (joinData.success) {
+          // Mark user as authenticated and passwordless for passwordless entry
+          // This allows them to access the VideoCall route which requires authentication
+          if (!globalStore.isAuthenticated) {
+            globalStore.setAuthenticated(true)
+            globalStore.setPasswordlessUser(true)
+          }
+
+          // Update current room state
+          currentRoom.value = {
+            room_id: joinData.room_id,
+            short_code: joinData.short_code,
+            participant_count: joinData.participant_count,
+            participant_id: joinData.participant_id,
+            joined_at: new Date().toISOString(),
+          }
+
+          addToHistory(currentRoom.value)
+          return { success: true, room: currentRoom.value }
+        }
+
+        return { success: false, error: joinData.error || 'Failed to join room' }
+      }
+
+      return { success: false, error: inviteData.error || 'Invalid invite' }
+    } catch (error) {
+      console.error('Failed to handle passwordless invite:', error)
+      const errorMessage = error.response?.data?.error || 'Invalid invite link'
+      return { success: false, error: errorMessage }
+    }
+  }
+
   const validateRoomCode = (code) => {
     // Room codes should be 6-8 alphanumeric characters
     const codeRegex = /^[A-Z0-9]{6,8}$/
@@ -356,5 +401,6 @@ export const useRoomsStore = defineStore('rooms', () => {
     validateRoomUrl,
     cleanup,
     startHistoryAutoSave,
+    handlePasswordlessInvite,
   }
 })

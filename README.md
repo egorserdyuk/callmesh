@@ -1,303 +1,305 @@
-# 🎥 Video Call App
+# 🎥 CallMesh
 
-Безопасное приложение для видеозвонков без регистрации с поддержкой WebRTC, построенное на Django и Vue.js.
+A secure, registration-free video calling application with WebRTC support, built using Django and Vue.js.
 
-## ✨ Особенности
+README.md on english, [русском](README_ru.md)
 
-- **🔐 Безопасность**: Аутентификация по паролю, CSRF защита
-- **📱 Адаптивность**: Полная поддержка мобильных устройств
-- **🎯 Простота**: Создание комнат одним кликом
-- **⚡ WebRTC**: Прямое P2P соединение для минимальной задержки
-- **🌙 Темная тема**: Автоматическое переключение по системным настройкам
-- **📊 Мониторинг**: Статистика качества соединения в реальном времени
-- **🔄 PWA**: Поддержка Progressive Web App для установки на устройства
+## ✨ Features
 
-## 🏗️ Архитектура
+- **🔐 Security**: Password-based authentication, CSRF protection
+- **📱 Responsive**: Full support for mobile devices
+- **🎯 Simplicity**: One-click room creation
+- **⚡ WebRTC**: Direct P2P connection for minimal latency
+- **🌙 Dark Mode**: Automatic switching based on system settings
+- **📊 Monitoring**: Real-time connection quality statistics
+- **🔄 PWA**: Progressive Web App support for installation on devices
+
+## 🏗️ Architecture
 
 ```
-📦 Video Call App
+📦 CallMesh
 ├── 🐍 Backend (Django)
 │   ├── REST API
 │   ├── WebSocket (Channels)
-│   ├── Redis (кэширование и сессии)
-│   └── PostgreSQL (база данных)
+│   ├── Redis (caching and sessions)
+│   └── PostgreSQL (database)
 ├── 🖥️ Frontend (Vue.js 3)
 │   ├── Composition API
-│   ├── Pinia (управление состоянием)
-│   ├── TailwindCSS (стили)
-│   └── WebRTC (видеосвязь)
+│   ├── Pinia (state management)
+│   ├── TailwindCSS (styles)
+│   └── WebRTC (video communication)
 └── 🐳 Docker
-    ├── Nginx (прокси)
+    ├── Nginx (proxy)
     ├── PostgreSQL
     ├── Redis
     └── SSL/HTTPS
 ```
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
-### Локальная разработка
+### Local Development
 
-1. **Клонирование репозитория**
+1. **Clone the repository**
 ```bash
-git clone <repository-url>
-cd video-call-app
+git clone https://github.com/egorserdyuk/callmesh
+cd callmesh
 ```
 
-2. **Запуск с Docker Compose**
+2. **Run with Docker Compose**
 ```bash
-# Создайте .env файл из примера
+# Create .env file from example
 cp env.example .env
 
-# Запустите контейнеры
+# Start containers
 docker-compose up --build
 ```
 
-3. **Создайте суперпользователя**
+3. **Create a superuser**
 ```bash
 docker-compose exec backend python manage.py createsuperuser
 ```
 
-4. **Доступ к приложению**
+4. **Access the application**
 - Frontend: http://localhost
 - Backend API: http://localhost/api
-- Admin панель: http://localhost/admin
+- Admin panel: http://localhost/admin
 
-## 📋 Системные требования
+## 📋 System Requirements
 
-- **Сервер**: Ubuntu 20.04+ или аналогичная Linux-система
-- **RAM**: Минимум 2GB, рекомендуется 4GB+
-- **CPU**: 2+ ядра
-- **Диск**: 20GB+ свободного места
-- **Сеть**: Статический IP или домен для SSL
+- **Server**: Ubuntu 20.04+ or similar Linux system
+- **RAM**: Minimum 2GB, recommended 4GB+
+- **CPU**: 2+ cores
+- **Disk**: 20GB+ free space
+- **Network**: Static IP or domain for SSL
 
-## 🛠️ Развертывание на продакшене
+## 🛠️ Production Deployment
 
-### 1. Подготовка сервера
+### 1. Server Preparation
 
-Обновите систему и установите необходимые пакеты:
+Update the system and install required packages:
 
 ```bash
 sudo apt-get update
 sudo apt-get install ca-certificates curl
 ```
 
-### 2. Установка Docker
+### 2. Install Docker
 
-**Добавление ключей и репозитория Docker:**
+**Add Docker keys and repository:**
 ```bash
 sudo install -m 0755 -d /etc/apt/keyrings
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
 sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 sudo apt-get update
 ```
 
-**Установка Docker и компонентов:**
+**Install Docker and components:**
 ```bash
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-**Добавление пользователя в группу Docker:**
+**Add user to Docker group:**
 ```bash
 sudo usermod -aG docker $USER
 newgrp docker
 ```
 
-### 3. Установка Docker Compose
+### 3. Install Docker Compose
 
 ```bash
 sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 ```
 
-### 4. Установка Nginx и Certbot
+### 4. Install Nginx and Certbot
 
 ```bash
 sudo apt update
 sudo apt install nginx certbot python3-certbot-nginx
 ```
 
-### 5. Настройка SSL-сертификатов
+### 5. Configure SSL Certificates
 
-**Получение сертификатов Let's Encrypt:**
+**Obtain Let's Encrypt certificates:**
 ```bash
 sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 ```
 
-**Остановка системного Nginx после получения сертификатов:**
+**Stop system Nginx after obtaining certificates:**
 ```bash
 sudo systemctl stop nginx
 sudo systemctl disable nginx
 ```
 
-### 6. Конфигурация проекта
+### 6. Project Configuration
 
-**Создайте файл окружения:**
+**Create environment file:**
 ```bash
 cp env.example .env
 ```
 
-**Настройте переменные в `.env`:**
+**Configure variables in `.env`:**
 ```bash
-# Основные настройки
+# Core settings
 DEBUG=False
 SECRET_KEY=your-super-secret-django-key-here
 DOMAIN_NAME=yourdomain.com
 
-# База данных
+# Database
 POSTGRES_PASSWORD=strong-database-password
 
-# Пути к SSL сертификатам
+# SSL certificate paths
 SSL_CERT_PATH=/etc/letsencrypt/live/yourdomain.com/fullchain.pem
 SSL_KEY_PATH=/etc/letsencrypt/live/yourdomain.com/privkey.pem
 
-# Домены
+# Domains
 ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
 CORS_ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 ```
 
-**Обновите nginx.conf:**
-Замените `yourdomain.com` на ваш реальный домен в файле `nginx.conf`.
+**Update nginx.conf:**
+Replace `yourdomain.com` with your actual domain in `nginx.conf`.
 
-### 7. Запуск приложения
+### 7. Start the Application
 
-**Сборка и запуск контейнеров:**
+**Build and start containers:**
 ```bash
 docker-compose up --build -d
 ```
 
-**Создание суперпользователя:**
+**Create superuser:**
 ```bash
 docker-compose exec backend python manage.py createsuperuser
 ```
 
-**Проверка статуса контейнеров:**
+**Check container status:**
 ```bash
 docker-compose ps
 ```
 
-### 8. Проверка работоспособности
+### 8. Verify Deployment
 
 - **Frontend**: https://yourdomain.com
 - **Backend API**: https://yourdomain.com/api/health/
-- **Admin панель**: https://yourdomain.com/admin/
+- **Admin panel**: https://yourdomain.com/admin/
 - **WebSocket**: wss://yourdomain.com/ws/
 
-## 🔧 Управление проектом
+## 🔧 Project Management
 
-### Основные команды
+### Common Commands
 
 ```bash
-# Просмотр логов
+# View logs
 docker-compose logs -f
 
-# Перезапуск сервисов
+# Restart services
 docker-compose restart
 
-# Остановка проекта
+# Stop project
 docker-compose down
 
-# Полная очистка (с удалением данных)
+# Full cleanup (including data)
 docker-compose down -v --remove-orphans
 ```
 
-### Обновление проекта
+### Updating the Project
 
 ```bash
-# Получение обновлений
-git pull origin main
+# Fetch updates
+git pull origin master
 
-# Пересборка и перезапуск
+# Rebuild and restart
 docker-compose up --build -d
 
-# Применение миграций (если есть)
+# Apply migrations (if any)
 docker-compose exec backend python manage.py migrate
 ```
 
-### Резервное копирование
+### Backup
 
 ```bash
-# Создание бэкапа базы данных
+# Create database backup
 docker-compose exec db pg_dump -U postgres videocall_db > backup_$(date +%Y%m%d_%H%M%S).sql
 
-# Восстановление из бэкапа
+# Restore from backup
 docker-compose exec -T db psql -U postgres videocall_db < backup_file.sql
 ```
 
-## 📊 Мониторинг
+## 📊 Monitoring
 
-### Health Check эндпоинты
+### Health Check Endpoints
 
-- **Общее состояние**: `/api/health/`
-- **Метрики системы**: `/api/metrics/` (только для админов)
+- **Overall status**: `/api/health/`
+- **System metrics**: `/api/metrics/` (admins only)
 
-### Логи
+### Logs
 
 ```bash
-# Все логи
+# All logs
 docker-compose logs -f
 
-# Логи конкретного сервиса
+# Service-specific logs
 docker-compose logs -f backend
 docker-compose logs -f nginx
 docker-compose logs -f db
 ```
 
-## 🛡️ Безопасность
+## 🛡️ Security
 
-### Рекомендации по безопасности
+### Security Recommendations
 
-1. **Измените пароль по умолчанию** в админ-панели
-2. **Используйте сложные пароли** для базы данных
-3. **Регулярно обновляйте** SSL-сертификаты
-4. **Настройте файрвол** для ограничения доступа
-5. **Мониторьте логи** на предмет подозрительной активности
+1. **Change the default password** in the admin panel
+2. **Use strong passwords** for the database
+3. **Renew SSL certificates regularly**
+4. **Configure a firewall** to restrict access
+5. **Monitor logs** for suspicious activity
 
-### Настройка файрвола (UFW)
+### Firewall Setup (UFW)
 
 ```bash
-# Разрешить SSH, HTTP и HTTPS
+# Allow SSH, HTTP, and HTTPS
 sudo ufw allow 22
 sudo ufw allow 80
 sudo ufw allow 443
 sudo ufw enable
 ```
 
-## 🔧 Разработка
+## 🔧 Development
 
-### Структура проекта
+### Project Structure
 
 ```
-📁 video-call-app/
+📁 callmesh/
 ├── 📁 backend/                 # Django backend
-│   ├── 📁 apps/               # Django приложения
-│   │   ├── 📁 authentication/ # Система аутентификации
-│   │   ├── 📁 core/          # Основные модели и утилиты
-│   │   └── 📁 rooms/         # Управление комнатами
-│   ├── 📁 videocall_app/     # Основные настройки Django
+│   ├── 📁 apps/               # Django apps
+│   │   ├── 📁 authentication/ # Authentication system
+│   │   ├── 📁 core/          # Core models and utilities
+│   │   └── 📁 rooms/         # Room management
+│   ├── 📁 videocall_app/     # Main Django settings
 │   └── 🐳 Dockerfile
 ├── 📁 videocall-frontend/     # Vue.js frontend
 │   ├── 📁 src/
-│   │   ├── 📁 components/    # Vue компоненты
-│   │   ├── 📁 stores/        # Pinia хранилища
-│   │   ├── 📁 services/      # API и утилиты
+│   │   ├── 📁 components/    # Vue components
+│   │   ├── 📁 stores/        # Pinia stores
+│   │   ├── 📁 services/      # API and utilities
 │   │   └── 📁 router/        # Vue Router
 │   └── 🐳 Dockerfile
-├── 🐳 docker-compose.yml     # Docker Compose конфигурация
-├── 📄 nginx.conf             # Nginx конфигурация
-└── 📄 .env.example           # Пример переменных окружения
+├── 🐳 docker-compose.yml     # Docker Compose configuration
+├── 📄 nginx.conf             # Nginx configuration
+└── 📄 .env.example           # Environment variables example
 ```
 
-### Локальная разработка
+### Local Development
 
 ```bash
 # Backend (Python/Django)
 cd backend
 python -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements_dev.txt
 python manage.py runserver
 
 # Frontend (Vue.js)
@@ -305,3 +307,4 @@ cd videocall-frontend
 npm install
 npm run dev
 ```
+

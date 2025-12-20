@@ -6,6 +6,7 @@ import { apiService } from '../services/api'
 export const useGlobalStore = defineStore('global', () => {
   // State
   const isAuthenticated = ref(false)
+  const isPasswordlessUser = ref(false)
   const isLoading = ref(false)
   const loadingMessage = ref('')
   const notifications = ref([])
@@ -18,6 +19,10 @@ export const useGlobalStore = defineStore('global', () => {
   // Actions
   const setAuthenticated = (value) => {
     isAuthenticated.value = value
+  }
+
+  const setPasswordlessUser = (value) => {
+    isPasswordlessUser.value = value
   }
 
   const setLoading = (loading, message = '') => {
@@ -103,11 +108,13 @@ export const useGlobalStore = defineStore('global', () => {
     try {
       await apiService.logout()
       setAuthenticated(false)
+      setPasswordlessUser(false)
       addNotification('Logged out successfully', 'info', 3000)
     } catch (error) {
       console.error('Logout failed:', error)
       // Force logout even if API call fails
       setAuthenticated(false)
+      setPasswordlessUser(false)
       addNotification('Logged out', 'info', 3000)
     }
   }
@@ -115,6 +122,7 @@ export const useGlobalStore = defineStore('global', () => {
   return {
     // State
     isAuthenticated,
+    isPasswordlessUser,
     isLoading,
     loadingMessage,
     notifications,
@@ -126,6 +134,7 @@ export const useGlobalStore = defineStore('global', () => {
 
     // Actions
     setAuthenticated,
+    setPasswordlessUser,
     setLoading,
     addNotification,
     removeNotification,

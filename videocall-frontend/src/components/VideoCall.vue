@@ -188,7 +188,7 @@
           muted
           playsinline
           class="w-full h-full object-cover"
-          :class="{ mirror: shouldMirrorLocal }"
+          :class="{ mirror: webrtcStore.shouldMirror }"
         ></video>
 
         <!-- Local video controls overlay -->
@@ -561,7 +561,6 @@ const showStats = ref(false)
 const showMenu = ref(false)
 const roomCodeCopied = ref(false)
 const roomLinkCopied = ref(false)
-const shouldMirrorLocal = ref(true)
 const showVideoInfo = ref(false)
 const showConnectionQuality = ref(true)
 const isConnecting = ref(false)
@@ -804,11 +803,23 @@ const handleEndCall = async () => {
       })
     }
 
-    router.push('/')
+    // Check if user is a passwordless user
+    if (globalStore.isPasswordlessUser) {
+      // For passwordless users, clear session and redirect to login
+      await globalStore.logout()
+      router.push('/login')
+    } else {
+      // For regular users, go to dashboard
+      router.push('/')
+    }
   } catch (error) {
     console.error('Failed to end call properly:', error)
     // Force navigate even if there's an error
-    router.push('/')
+    if (globalStore.isPasswordlessUser) {
+      router.push('/login')
+    } else {
+      router.push('/')
+    }
   }
 }
 

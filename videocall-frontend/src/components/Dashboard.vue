@@ -43,6 +43,11 @@
         <VideoPreview />
       </div>
 
+      <!-- Media Controls -->
+      <div class="mb-6">
+        <MediaControls />
+      </div>
+
       <!-- Action Buttons -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <ActionCard
@@ -50,9 +55,9 @@
           description="Start a new video call and share the link"
           icon="plus"
           :loading="roomsStore.isCreatingRoom"
-          @click="handleCreateRoom"
+          @click="showCreateRoomModal = true"
         />
-
+    
         <ActionCard
           title="Join Call"
           description="Enter a room code or link to join"
@@ -135,6 +140,50 @@
       </div>
     </Teleport>
 
+    <!-- Create Room Modal -->
+    <Teleport to="body">
+      <div
+        v-if="showCreateRoomModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        @click="showCreateRoomModal = false"
+      >
+        <div class="card w-full max-w-md p-6 animate-slide-up" @click.stop>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Create New Room</h3>
+  
+          <div class="space-y-4 mb-6">
+            <div class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <input
+                type="checkbox"
+                id="passwordlessEntry"
+                v-model="allowPasswordlessEntry"
+                class="h-5 w-5 text-green-500 rounded focus:ring-green-400"
+              />
+              <label for="passwordlessEntry" class="text-sm text-gray-700 dark:text-gray-300">
+                <span class="font-medium">Allow passwordless entry</span>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Generate a special invite link that allows instant access without entering a room code
+                </p>
+              </label>
+            </div>
+          </div>
+  
+          <div class="flex space-x-3">
+            <button @click="showCreateRoomModal = false" class="btn-secondary flex-1">
+              Cancel
+            </button>
+            <button
+              @click="handleCreateRoom"
+              :disabled="roomsStore.isCreatingRoom"
+              class="btn-primary flex-1 disabled:opacity-50"
+            >
+              <span v-if="roomsStore.isCreatingRoom">Creating...</span>
+              <span v-else>Create Room</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+  
     <!-- Room Created Modal -->
     <RoomCreatedModal
       v-if="showRoomCreatedModal && createdRoom"
@@ -151,6 +200,7 @@ import { useGlobalStore } from '../stores/global'
 import { useRoomsStore } from '../stores/rooms'
 import { utils } from '../services/utils'
 import VideoPreview from './VideoPreview.vue'
+import MediaControls from './MediaControls.vue'
 import ActionCard from './ActionCard.vue'
 import RoomCreatedModal from './RoomCreatedModal.vue'
 
@@ -160,9 +210,11 @@ const roomsStore = useRoomsStore()
 
 // Reactive state
 const showJoinModal = ref(false)
+const showCreateRoomModal = ref(false)
 const showRoomCreatedModal = ref(false)
 const joinInput = ref('')
 const createdRoom = ref(null)
+const allowPasswordlessEntry = ref(false)
 
 // Methods
 const handleLogout = async () => {
@@ -171,11 +223,13 @@ const handleLogout = async () => {
 }
 
 const handleCreateRoom = async () => {
-  const result = await roomsStore.createRoom()
+  const result = await roomsStore.createRoom(allowPasswordlessEntry.value)
 
   if (result.success) {
     createdRoom.value = result.room
     showRoomCreatedModal.value = true
+    showCreateRoomModal.value = false
+    allowPasswordlessEntry.value = false // Reset for next time
   }
 }
 

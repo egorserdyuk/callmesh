@@ -63,6 +63,44 @@ const routes = [
     },
   },
   {
+    path: '/invite/:token',
+    name: 'PasswordlessInvite',
+    component: JoinRoom,
+    meta: {
+      requiresAuth: false,  // Passwordless invites should not require authentication
+      title: 'Join Room',
+      description: 'Join video call via passwordless invite',
+      showInNav: false,
+    },
+    props: true,
+    beforeEnter: async (to, from, next) => {
+      // Handle passwordless invite tokens
+      const token = to.params.token
+      if (!token || token.length < 10) {
+        console.warn('Invalid invite token format:', token)
+        next({ name: 'NotFound' })
+        return
+      }
+
+      try {
+        // Try to handle the passwordless invite
+        const roomsStore = useRoomsStore()
+        const result = await roomsStore.handlePasswordlessInvite(token)
+
+        if (result.success) {
+          // Redirect directly to video call if successful
+          next({ name: 'VideoCall', params: { roomId: result.room.room_id } })
+        } else {
+          console.warn('Invalid or expired invite token:', token)
+          next({ name: 'NotFound' })
+        }
+      } catch (error) {
+        console.error('Error handling passwordless invite:', error)
+        next({ name: 'NotFound' })
+      }
+    },
+  },
+  {
     path: '/join/:shortCode',
     name: 'JoinRoom',
     component: JoinRoom,

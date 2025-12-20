@@ -56,6 +56,22 @@
           <img :src="room.qr_code" alt="QR Code" class="w-32 h-32" />
         </div>
       </div>
+    
+      <!-- Passwordless Invite URL (if available) -->
+      <div v-if="room.passwordless_invite_url" class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Passwordless Invite Link
+        </label>
+        <div class="flex items-center space-x-2">
+          <input :value="room.passwordless_invite_url" readonly class="input-field flex-1 text-sm" />
+          <button @click="copyPasswordlessLink" class="btn-secondary px-4 py-3 min-w-[80px]">
+            {{ passwordlessLinkCopied ? 'Copied!' : 'Copy' }}
+          </button>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          Share this link for instant access without entering a room code
+        </p>
+      </div>
 
       <!-- Action Buttons -->
       <div class="flex space-x-3">
@@ -92,6 +108,7 @@ const emit = defineEmits(['close'])
 // Reactive state
 const codeCopied = ref(false)
 const linkCopied = ref(false)
+const passwordlessLinkCopied = ref(false)
 
 // Methods
 const copyCode = async () => {
@@ -111,6 +128,18 @@ const copyLink = async () => {
     setTimeout(() => {
       linkCopied.value = false
     }, 2000)
+  }
+}
+
+const copyPasswordlessLink = async () => {
+  if (props.room.passwordless_invite_url) {
+    const result = await utils.copyToClipboard(props.room.passwordless_invite_url)
+    if (result.success) {
+      passwordlessLinkCopied.value = true
+      setTimeout(() => {
+        passwordlessLinkCopied.value = false
+      }, 2000)
+    }
   }
 }
 

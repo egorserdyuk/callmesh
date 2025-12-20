@@ -1,37 +1,41 @@
-FROM python:3.11-slim
+FROM python:3.14-alpine
 
 WORKDIR /app
 
-# Установка системных зависимостей
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
+# Installing system dependencies
+RUN apk update && apk add --no-cache --virtual .build-deps \
+    postgresql-dev \
     gcc \
+    musl-dev \
+    python3-dev \
     gettext \
-    vim \
-    && rm -rf /var/lib/apt/lists/*
+    vim && \
+    apk add --no-cache \
+    postgresql-client && \
+    rm -rf /var/cache/apk/*
 
-# Копирование и установка Python зависимостей
+# Copying and installing Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Дополнительно устанавливаем daphne если его нет в requirements.txt
-RUN pip install daphne
+# Additionally, install daphne if it is not in requirements.txt.
+RUN pip install --no-cache-dir daphne
 
-# Создание непривилегированного пользователя с определенным UID/GID
-RUN groupadd -r appuser -g 1000 && useradd -r -g appuser -u 1000 appuser
+# Creating an unprivileged user with a specific UID/GID
+RUN addgroup -r appuser -g 1000 && adduser -r -g appuser -u 1000 appuser
 
-# Копирование исходного кода
+# Copying the source code
 COPY . .
 
-# Создание директорий для статических файлов, медиа и логов с правильными правами
+# Creating directories for static files, media, and logs with the correct permissions
 RUN mkdir -p /app/staticfiles /app/media /app/logs && \
     chown -R appuser:appuser /app && \
     chmod -R 755 /app/logs
 
-# Переключение на непривилегированного пользователя
+# Switch to unprivileged user
 USER appuser
 
 EXPOSE 8000
 
-# Команда по умолчанию - запуск через daphne для поддержки WebSocket
+# Default command - launch via daphne to support WebSocket
 CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "videocall_app.asgi:application"]
